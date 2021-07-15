@@ -1,11 +1,13 @@
 const mongoose = require("mongoose");
 
-mongoose.connect("mongodb://localhost:27017/Chatapp",{
+mongoose.connect(process.env.DATABASE,{
     useNewUrlParser:true,
     useUnifiedTopology:true,
-    useCreateIndex:true
+    useCreateIndex:true,
+    useFindAndModify:false
 }).then(()=>{
     console.log(`connection successfull`);
 }).catch((e)=>{
     console.log(`no connection`);
 });
+
