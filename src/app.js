@@ -7,6 +7,9 @@ const hbs = require("hbs");
 const Register = require("./models/registers");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+const auth = require("../src/middleware/auth");
+
 
 require("./db/conn");
 
@@ -15,6 +18,7 @@ const templates_path = path.join(__dirname, "../templates/views");
 const partials_path = path.join(__dirname, "../templates/partials");
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({extended:false}));
 
 app.use(express.static(static_path));
@@ -24,6 +28,9 @@ hbs.registerPartials(partials_path);
 
 app.get("/", (req,res) => {
     res.render("index");
+});
+app.get("/home", auth ,(req,res) => {
+    res.render("home");
 });
 
 app.post("/", async (req,res) => {
@@ -39,6 +46,11 @@ app.post("/", async (req,res) => {
             })
             const token = await registerUser.generateToken();
 
+            res.cookie("jwt", token,{
+                expires:new Date(Date.now() + 3153600000),
+                httpOnly:true
+            });
+
             
             const registered = await registerUser.save();
             res.status(201).render("index");
@@ -50,7 +62,7 @@ app.post("/", async (req,res) => {
     }
 });
 
-app.post("/login", async (req, res)=>{
+app.post("/home", async (req, res)=>{
     try {
         const email = req.body.LoginEmail;
         const password = req.body.LoginPassword;
@@ -59,6 +71,11 @@ app.post("/login", async (req, res)=>{
         const isMatch = await bcrypt.compare(password, useremail.Password);
 
         const token = await useremail.generateToken();
+
+        res.cookie("jwt", token,{
+            expires:new Date(Date.now() + 60000),
+            httpOnly:true
+        });
 
         if(isMatch){
             res.status(201).render("home")
