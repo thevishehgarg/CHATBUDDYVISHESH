@@ -9,8 +9,18 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const auth = require('../src/middleware/auth');
 const http = require('http');
+const cors = require('cors');
 
 require('./db/conn');
+
+const socketCors = {
+  origin: (origin, callback) => {
+    callback(null, true);
+  },
+  methods: ['GET', 'POST'],
+  credentials: true,
+  transports: ['websocket', 'polling'],
+};
 
 const static_path = path.join(__dirname, '../public');
 
@@ -19,6 +29,15 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(express.static(static_path));
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      callback(null, true);
+    },
+    credentials: true,
+  })
+);
 
 app.get('/', (req, res) => {
   res.send('Welcome to chat');
@@ -81,7 +100,9 @@ app.post('/home', async (req, res) => {
 });
 const myServer = http.createServer(app);
 // Node server which will handle socket io connections
-const io = require('socket.io')(myServer);
+const io = require('socket.io')(myServer, {
+  cors,
+});
 
 const users = {};
 
