@@ -20,6 +20,10 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(express.static(static_path));
 
+app.get('/', (req, res) => {
+  res.send('Welcome to chat');
+});
+
 app.post('/', async (req, res) => {
   try {
     const password = req.body.Password;
