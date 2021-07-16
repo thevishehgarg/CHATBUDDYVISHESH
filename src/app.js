@@ -101,7 +101,7 @@ app.post('/home', async (req, res) => {
 const myServer = http.createServer(app);
 // Node server which will handle socket io connections
 const io = require('socket.io')(myServer, {
-  cors,
+  cors: socketCors,
 });
 
 const users = {};
