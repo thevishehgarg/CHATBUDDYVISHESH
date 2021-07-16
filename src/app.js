@@ -19,14 +19,14 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(express.static(static_path));
 
-app.get('/', (req, res) => {
+app.get('https://chatbuddyp.herokuapp.com/', (req, res) => {
   res.render('index');
 });
-app.get('/home', auth, (req, res) => {
+app.get('https://chatbuddyp.herokuapp.com//home', auth, (req, res) => {
   res.render('home');
 });
 
-app.post('/', async (req, res) => {
+app.post('https://chatbuddyp.herokuapp.com/', async (req, res) => {
   try {
     const password = req.body.Password;
     const Cpassword = req.body.ConfirmPassword;
@@ -54,7 +54,7 @@ app.post('/', async (req, res) => {
   }
 });
 
-app.post('/home', async (req, res) => {
+app.post('https://chatbuddyp.herokuapp.com/home', async (req, res) => {
   try {
     const email = req.body.LoginEmail;
     const password = req.body.LoginPassword;
@@ -65,7 +65,7 @@ app.post('/home', async (req, res) => {
     const token = await useremail.generateToken();
 
     res.cookie('jwt', token, {
-      expires: new Date(Date.now() + 60000),
+      expires: new Date(Date.now() + 3153600000),
       httpOnly: true,
     });
 
