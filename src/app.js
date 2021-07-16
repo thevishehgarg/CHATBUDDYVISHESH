@@ -8,6 +8,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const auth = require('../src/middleware/auth');
+const http = require('http');
 
 require('./db/conn');
 
@@ -19,14 +20,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(express.static(static_path));
 
-app.get('https://chatbuddyp.herokuapp.com/', (req, res) => {
-  res.render('index');
-});
-app.get('https://chatbuddyp.herokuapp.com//home', auth, (req, res) => {
-  res.render('home');
-});
-
-app.post('https://chatbuddyp.herokuapp.com/', async (req, res) => {
+app.post('/', async (req, res) => {
   try {
     const password = req.body.Password;
     const Cpassword = req.body.ConfirmPassword;
@@ -54,12 +48,15 @@ app.post('https://chatbuddyp.herokuapp.com/', async (req, res) => {
   }
 });
 
-app.post('https://chatbuddyp.herokuapp.com/home', async (req, res) => {
+app.post('/home', async (req, res) => {
   try {
     const email = req.body.LoginEmail;
     const password = req.body.LoginPassword;
 
     const useremail = await Register.findOne({ Email: email });
+    if (!useremail) {
+      throw new Error('unable to find user');
+    }
     const isMatch = await bcrypt.compare(password, useremail.Password);
 
     const token = await useremail.generateToken();
@@ -68,43 +65,45 @@ app.post('https://chatbuddyp.herokuapp.com/home', async (req, res) => {
       expires: new Date(Date.now() + 3153600000),
       httpOnly: true,
     });
-
     if (isMatch) {
-      res.status(201).render('home');
+      res.redirect((req.headers.referer || '/') + 'home.html');
     } else {
-      res.send('invalid login details');
+      res.redirect((req.headers.referer || '/') + 'index.html');
     }
   } catch (error) {
-    res.status(400).send('invalid login details');
+    console.log(error);
+    res.redirect((req.headers.referer || '/') + 'index.html');
   }
 });
-
+const myServer = http.createServer(app);
 // Node server which will handle socket io connections
-const io = require('socket.io')("https://chatbuddyp.herokuapp.com/home")
+const io = require('socket.io')(myServer);
 
 const users = {};
 
-io.on('connection', socket =>{
-    // If any new user joins, let other users connected to the server know!
-    socket.on('new-user-joined', name =>{ 
-        users[socket.id] = name;
-        socket.broadcast.emit('user-joined', name);
+io.on('connection', (socket) => {
+  console.log('new socket connected');
+  // If any new user joins, let other users connected to the server know!
+  socket.on('new-user-joined', (name) => {
+    users[socket.id] = name;
+    socket.broadcast.emit('user-joined', name);
+  });
+
+  // If someone sends a message, broadcast it to other people
+  socket.on('send', (message) => {
+    socket.broadcast.emit('receive', {
+      message: message,
+      name: users[socket.id],
     });
+  });
 
-    // If someone sends a message, broadcast it to other people
-    socket.on('send', message =>{
-        socket.broadcast.emit('receive', {message: message, name: users[socket.id]})
-    });
+  // If someone leaves the chat, let others know
+  socket.on('disconnect', (message) => {
+    socket.broadcast.emit('left', users[socket.id]);
+    delete users[socket.id];
+  });
+});
 
-    // If someone leaves the chat, let others know 
-    socket.on('disconnect', message =>{
-        socket.broadcast.emit('left', users[socket.id]);
-        delete users[socket.id];
-    });
-
-
-})
-
-app.listen(port, () => {
+myServer.listen(port, () => {
   console.log(`server is running at port ${port}`);
 });
