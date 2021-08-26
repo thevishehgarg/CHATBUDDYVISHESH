@@ -50,6 +50,7 @@ app.post('/', async (req, res) => {
 
     if (password === Cpassword) {
       const registerUser = new Register({
+        Name: req.body.Name,
         Email: req.body.Email,
         Password: req.body.Password,
         ConfirmPassword: req.body.ConfirmPassword,
@@ -62,7 +63,7 @@ app.post('/', async (req, res) => {
       });
 
       const registered = await registerUser.save();
-      res.status(201).render('index');
+      res.redirect((req.headers.referer || '/') + 'home.html');
     } else {
       res.send('Passwords are not matching');
     }
