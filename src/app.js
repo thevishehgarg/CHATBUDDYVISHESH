@@ -54,7 +54,7 @@ app.post('/', async (req, res) => {
         Email: req.body.Email,
         Password: req.body.Password,
         ConfirmPassword: req.body.ConfirmPassword,
-        Mobile: req.body.Mobile,
+        Mobile: req.body.Mobile
       });
       const token = await registerUser.generateToken();
 
@@ -64,7 +64,7 @@ app.post('/', async (req, res) => {
       });
 
       const registered = await registerUser.save();
-      res.redirect((req.headers.referer || '/') + 'index.html');
+      res.redirect((req.headers.referer || '/') + 'home.html');
     } else {
       res.send('Passwords are not matching');
     }
