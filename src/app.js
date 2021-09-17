@@ -73,7 +73,7 @@ app.post('/', async (req, res) => {
   }
 });
 
-app.post('/', async (req, res) => {
+app.post('/index', async (req, res) => {
   try {
     const email = req.body.LoginEmail;
     const password = req.body.LoginPassword;
