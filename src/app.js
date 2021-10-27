@@ -40,29 +40,25 @@ app.use(
 );
 
 app.get('/', (req, res) => {
-  res.send('Welcome to chat');
+  res.render('index');
 });
 
-app.post('/', async (req, res) => {
+app.post('/index', async (req, res) => {
   try {
     const password = req.body.Password;
     const Cpassword = req.body.ConfirmPassword;
 
     if (password === Cpassword) {
       const registerUser = new Register({
-        Name: req.body.Name,
         Email: req.body.Email,
         Password: req.body.Password,
         ConfirmPassword: req.body.ConfirmPassword,
-        Mobile: req.body.Mobile
       });
       const token = await registerUser.generateToken();
-
       res.cookie('jwt', token, {
         expires: new Date(Date.now() + 3153600000),
         httpOnly: true,
       });
-
       const registered = await registerUser.save();
       res.redirect((req.headers.referer || '/') + 'home.html');
     } else {
@@ -73,7 +69,7 @@ app.post('/', async (req, res) => {
   }
 });
 
-app.post('/index', async (req, res) => {
+app.post('/home', async (req, res) => {
   try {
     const email = req.body.LoginEmail;
     const password = req.body.LoginPassword;
@@ -91,6 +87,7 @@ app.post('/index', async (req, res) => {
       httpOnly: true,
     });
     if (isMatch) {
+      // console.log("Hellooo in isMatch")
       res.redirect((req.headers.referer || '/') + 'home.html');
     } else {
       res.redirect((req.headers.referer || '/') + 'index.html');
