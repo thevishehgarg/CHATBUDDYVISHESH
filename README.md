@@ -1,5 +1,5 @@
 # Nodejs must be installed in your system to run the Application
-# Terminal commands to run the application
+# Terminal commands in your IDE to run the application
 # npm install - It will install all node modules required for the application
 # node src/app.js - to run the application
 # type http://localhost:3000/ in your browser - Your app will be launched 
